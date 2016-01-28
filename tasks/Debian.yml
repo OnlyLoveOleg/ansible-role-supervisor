@@ -1,0 +1,61 @@
+---
+- name: Debian | Create directories
+  file:
+   path={{ item }}
+   state=directory
+   mode=0755
+  with_items:
+   - /etc/supervisor
+   - /etc/supervisor/conf.d
+   - /var/log/supervisor
+
+- name: Debian | Install python-setuptools
+  apt: 
+   name=python-setuptools
+   state=latest
+   update_cache=yes
+
+- name: Debian | Install supervisor
+  easy_install: 
+   name=supervisor
+   state=present
+
+- name: Debian | Display supervisord.conf src location if defined
+  debug: msg="path {{ supervisor.conf }}"
+  when: supervisor.conf is defined
+
+- name: Debian | Copy supervisor main config to /etc/supervisor/supervisord.conf
+  template:
+   src={{ supervisor.conf }}
+   dest=/etc/supervisor/supervisord.conf
+  notify: supervisor restart
+  when: supervisor.conf
+
+- name: Debian | Copy init script to /etc/init.d/supervisor
+  template:
+   src=Debian/init.supervisor.j2
+   dest=/etc/init.d/supervisor
+   mode=0755
+
+- name: Debian | Debug print supervisor.conf_d path
+  debug: var=supervisor.conf_d
+  when: supervisor.conf_d is defined
+
+# copy sudoers.d as defined by group_vars or host_vars
+- name: Debian | Copy config files to conf.d on remote
+  template:
+    src={{ item }}
+    dest=/etc/supervisor/conf.d/{{ item | basename }}
+    owner=root
+    group=root
+    mode=0440
+  with_fileglob:
+    - "{{ supervisor.conf_d }}/*.conf"
+  when: supervisor.conf_d is defined
+  notify: supervisor restart
+
+- name: Debian | Enable supervisor service
+  service:
+    name={{ supervisor_service_name }}
+    state=started
+    enabled=yes

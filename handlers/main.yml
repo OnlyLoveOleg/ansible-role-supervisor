@@ -1,0 +1,7 @@
+---
+- name: supervisor restart
+  become_user: root
+  become_method: sudo
+  service:
+   name={{ supervisor_service_name }}
+   state=restarted

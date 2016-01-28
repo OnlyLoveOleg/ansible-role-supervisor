@@ -1,0 +1,23 @@
+---
+# ansible_distribution_release
+# CenOS 7     - Core
+# Ubuntu 14   - trusty
+# RedHat 6    - Santiago
+# RedHat 7    - Maipo
+#
+- name: Check for supported operating system on target
+  fail:
+    msg: "The operating system of the target machine ({{ inventory_hostname }}) is not currently supported."
+  when: ansible_distribution_release not in ['trusty'] or supervisor is not defined
+
+- name: include os specific variables
+  include_vars: "{{ ansible_os_family }}.yml"
+  when: supervisor is defined
+
+- name: Include Debian specific tasks
+  include: Debian.yml
+  when: supervisor is defined and ansible_os_family == 'Debian'
+
+#- name: Include RedHat specific tasks
+#  include: RedHat.yml
+#  when: supervisor is defined and ansible_os_family == 'RedHat'
