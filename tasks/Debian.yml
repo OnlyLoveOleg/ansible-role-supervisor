@@ -41,7 +41,7 @@
   debug: var=supervisor.conf_d
   when: supervisor.conf_d is defined
 
-# copy sudoers.d as defined by group_vars or host_vars
+
 - name: Debian | Copy config files to conf.d on remote
   template:
     src={{ item }}
@@ -50,9 +50,9 @@
     group=root
     mode=0440
   with_fileglob:
-    - "{{ supervisor.conf_d }}/*.conf"
-  when: supervisor.conf_d is defined
+    - "{{ supervisor.conf_d | default([]) }}/*.conf"
   notify: supervisor restart
+
 
 - name: Debian | Enable supervisor service
   service:
