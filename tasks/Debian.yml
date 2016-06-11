@@ -27,7 +27,7 @@
 - name: Debian | Copy supervisor main config to /etc/supervisor/supervisord.conf
   template:
    src={{ supervisor.conf }}
-   dest=/etc/supervisor/supervisord.conf
+   dest=/etc/supervisord.conf
   notify: supervisor restart
   when: supervisor.conf
 
